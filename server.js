@@ -1,4 +1,4 @@
-const net = require('net');
+const { createServer } = require('net');
 
 // Define the remote functions that can be called by the client
 function add(a, b) {
@@ -21,7 +21,7 @@ function divide(a, b) {
 const functions = { add, subtract, multiply, divide };
 
 // Create a TCP server
-const server = net.createServer((socket) => {
+const server = createServer((socket) => {
   console.log("✅ Client connected.");
 
   // When data is received from client

@@ -1,34 +1,26 @@
 const net = require('net');
+const client = new net.Socket();
 
-function callRpc(functionName, args) {
-  return new Promise((resolve, reject) => {
-    const client = net.createConnection({ host: '127.0.0.1', port: 9999 }, () => {
-      const req = { functionName, args };
-      client.write(JSON.stringify(req));
-    });
+client.connect(9999, '127.0.0.1', () => {
+  console.log("🚀 Connected to RPC Server.");
 
-    client.on('data', (data) => {
-      try {
-        const res = JSON.parse(data.toString());
-        resolve(res);
-      } catch (err) {
-        reject(err);
-      } finally {
-        client.end();
-      }
-    });
+  const request = { functionName: "add", args: [10, 5] };
+  client.write(JSON.stringify(request));
+});
 
-    client.on('error', (err) => reject(err));
-  });
-}
+client.on('data', (data) => {
+  const response = JSON.parse(data.toString());
+  console.log("📩 Response from server:", response);
 
-(async () => {
-  try {
-    console.log(await callRpc('add', [7, 3]));
-    console.log(await callRpc('multiply', [4, 5]));
-    console.log(await callRpc('divide', [10, 0]));
-    console.log(await callRpc('unknown', [1, 2]));
-  } catch (err) {
-    console.error('Client error:', err);
+  if (response.status === "success") {
+    console.log(`✅ Result: ${response.result}`);
+  } else {
+    console.log(`❌ Error: ${response.message}`);
   }
-})();
+
+  client.end();
+});
+
+client.on('end', () => {
+  console.log("🔌 Disconnected from server.");
+});
